@@ -4,20 +4,30 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(function (_a) {
     var mode = _a.mode;
     var env = loadEnv(mode, process.cwd(), '');
-    // Fallback config to prevent crash if .env is missing
-    var fallbackConfig = JSON.stringify({
+    // Fallback config as a literal object
+    var fallbackConfig = {
         apiKey: "demo-key",
         authDomain: "demo.firebaseapp.com",
         projectId: "demo-project",
         storageBucket: "demo.appspot.com",
         messagingSenderId: "123456789",
         appId: "1:123456789:web:abcdef"
-    });
+    };
+    // Parse the env var if it exists, otherwise use fallback
+    var firebaseConfig;
+    try {
+        firebaseConfig = env.VITE_FIREBASE_CONFIG ? JSON.parse(env.VITE_FIREBASE_CONFIG) : fallbackConfig;
+    }
+    catch (e) {
+        console.error("Failed to parse VITE_FIREBASE_CONFIG, using fallback", e);
+        firebaseConfig = fallbackConfig;
+    }
     return {
         plugins: [react()],
         define: {
-            __firebase_config: JSON.stringify(env.VITE_FIREBASE_CONFIG || fallbackConfig),
-            __initial_auth_token: "undefined",
+            // Define these as literal objects/values, not double-stringified strings
+            __firebase_config: JSON.stringify(firebaseConfig),
+            __initial_auth_token: JSON.stringify(env.VITE_INITIAL_AUTH_TOKEN || null),
             __app_id: JSON.stringify(env.VITE_APP_ID || 'local-dev-app')
         }
     };

@@ -57,7 +57,7 @@ const LandingPage = ({ onEnter, onSusTest }: { onEnter: () => void, onSusTest: (
     <Snowfall />
     <div className="relative z-10">
       <div className="inline-block bg-white/95 border-4 border-red-600 shadow-[10px_10px_0_#15803d] p-12 rounded-[3rem] rotate-2 transform hover:rotate-0 transition-all duration-500 animate-[violent-shake_0.5s_infinite] mb-12">
-        <h1 className="text-6xl md:text-8xl font-black text-red-700 tracking-tighter leading-none flex flex-col items-center gap-2 drop-shadow-sm" style={{ fontFamily: '"Mountains of Christmas", cursive' }}>
+        <h1 className="text-6xl md:text-8xl font-black text-red-700 tracking-tighter leading-none flex flex-col items-center gap-2 drop-shadow-sm">
           <span>12 DAYS OF</span>
           <span className="text-green-600">GISHMAS</span>
         </h1>
@@ -104,7 +104,7 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
     // const hasSpun = sessionStorage.getItem('gishmas_wheel_spun');
     // if (!hasSpun) {
     //   const timer = setTimeout(() => {
-    //     setShowWheel(true);
+    //     // setShowWheel(true); // DISABLED: Auto-popup removed
     //   }, 3000);
     //   return () => clearTimeout(timer);
     // }
@@ -176,15 +176,13 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
       </button>
 
       <div className="relative z-10 w-full max-w-4xl pt-12 flex flex-col items-center">
-        <div className="inline-block bg-white/95 border-4 border-red-600 shadow-[10px_10px_0_#15803d] p-8 md:p-12 rounded-[3rem] rotate-2 transform hover:rotate-0 transition-all duration-500 animate-[violent-shake_0.5s_infinite] mb-12">
-          <h1 className="text-5xl md:text-7xl font-black text-red-700 tracking-tighter leading-none flex flex-col items-center gap-2 drop-shadow-sm" style={{ fontFamily: '"Mountains of Christmas", cursive' }}>
-            <span>12 DAYS OF</span>
-            <span className="text-green-600">GISHMAS</span>
-          </h1>
-        </div>
+        <h1 className="text-5xl md:text-7xl font-black text-green-600 tracking-tighter leading-none flex items-center gap-2 drop-shadow-sm mb-12 whitespace-nowrap" style={{ fontFamily: '"Mountains of Christmas", cursive' }}>
+          <span>12 DAYS OF</span>
+          <span>GISHMAS</span>
+        </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-          {/* Day 1 - Daily Spin */}
+            {/* Day 1 - Daily Spin */}
           <button 
             onClick={() => setShowWheel(true)}
             className={`p-8 rounded-[2rem] border-[6px] shadow-[0_8px_0_#854d0e] hover:scale-105 active:scale-95 active:shadow-none active:translate-y-2 transition-all group ${unlockedDay >= 1 ? 'bg-white border-yellow-400 hover:bg-yellow-100' : 'bg-black/20 border-white/10 opacity-60 pointer-events-none'}`}
