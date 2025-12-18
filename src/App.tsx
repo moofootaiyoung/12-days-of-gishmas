@@ -1,18 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import confetti from 'canvas-confetti';
 import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
   signInWithCustomToken, 
   signInAnonymously, 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   User 
 } from 'firebase/auth';
 import { 
-  getFirestore 
+  getFirestore,
+  doc,
+  setDoc,
+  serverTimestamp
 } from 'firebase/firestore';
 import { 
   X,
-  Trophy
+  Trophy,
+  Play,
+  Pause,
+  RotateCcw
 } from 'lucide-react';
 import { SusTest } from './SusTest';
 
@@ -51,33 +60,149 @@ const Snowfall = () => (
 );
 
 // --- Landing Page Component ---
-const LandingPage = ({ onEnter, onSusTest }: { onEnter: () => void, onSusTest: () => void }) => {
+const LandingPage = ({ onEnter, onLogin, onSignup }: { onEnter: () => void, onLogin: (e: string, p: string) => Promise<void>, onSignup: (e: string, p: string) => Promise<void> }) => {
+  const [showLogin, setShowLogin] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isSignup, setIsSignup] = useState(false);
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    try {
+      if (isSignup) {
+        await onSignup(email, password);
+      } else {
+        await onLogin(email, password);
+      }
+      setShowLogin(false);
+    } catch (err: any) {
+      console.error(err);
+      setError('Authentication Failed');
+    }
+  };
+
+  const handleEnter = () => {
+    // Fire confetti
+    const duration = 1500;
+    const end = Date.now() + duration;
+
+    // Launch a burst of confetti from the sides
+    const frame = () => {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#dc2626', '#16a34a', '#ffffff'], // Red-600, Green-600, White
+        zIndex: 100
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#dc2626', '#16a34a', '#ffffff'],
+        zIndex: 100
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+    
+    // Also a big burst from the center for impact
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#dc2626', '#16a34a', '#ffffff'],
+      zIndex: 100
+    });
+
+    onEnter();
+  };
+
   return (
-  <div className="min-h-screen bg-gradient-to-b from-red-700 to-green-900 flex flex-col items-center justify-center p-4 text-center font-sans uppercase relative overflow-hidden">
-    <Snowfall />
-    <div className="relative z-10">
-      <div className="inline-block bg-white/95 border-4 border-red-600 shadow-[10px_10px_0_#15803d] p-12 rounded-[3rem] rotate-2 transform hover:rotate-0 transition-all duration-500 animate-[violent-shake_0.5s_infinite] mb-12">
-        <h1 className="text-6xl md:text-8xl font-black text-red-700 tracking-tighter leading-none flex flex-col items-center gap-2 drop-shadow-sm">
+  <div className="min-h-screen bg-gradient-to-b from-red-700 to-green-900 relative overflow-hidden flex flex-col items-center justify-center p-4 text-center font-sans uppercase">
+    {/* Video Background */}
+    <video 
+      autoPlay 
+      muted 
+      loop 
+      playsInline 
+      className="absolute inset-0 w-full h-full object-contain z-0"
+    >
+      <source src="/assets/raza-body-gishmas-edit-2-cropped.mp4" type="video/mp4" />
+    </video>
+    {/* Overlay to blend video with background */}
+    <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-red-700/70 via-black/40 to-green-900/70" />
+
+    {/* Content */}
+    <div className="relative z-10 w-full flex flex-col items-center">
+      <div className="inline-block bg-white/95 border-4 border-red-600 shadow-[10px_10px_0_#15803d] p-6 md:p-12 rounded-[2rem] md:rounded-[3rem] rotate-2 transform hover:rotate-0 transition-all duration-500 animate-[violent-shake_0.5s_infinite] mb-8 md:mb-12">
+        <h1 className="text-5xl md:text-8xl font-black text-red-700 tracking-tighter leading-none flex flex-col items-center gap-2 drop-shadow-sm">
           <span>12 DAYS OF</span>
           <span className="text-green-600">GISHMAS</span>
         </h1>
       </div>
       
-      <div className="max-w-md mx-auto space-y-6 flex flex-col items-center">
-        <button 
-          onClick={onEnter}
+      <div className="max-w-md mx-auto space-y-6 flex flex-col items-center w-full">
+        <button
+          onClick={handleEnter}
           className="w-full bg-red-600 hover:bg-red-500 text-white font-black text-2xl md:text-4xl py-6 px-10 rounded-2xl border-b-8 border-red-800 active:border-b-0 active:translate-y-2 transition-all shadow-xl hover:scale-[1.02] flex items-center justify-center gap-4 group"
         >
           ENTER
         </button>
-        <button 
-          onClick={onSusTest}
-          className="text-white/60 hover:text-white transition-colors text-sm font-bold tracking-widest uppercase underline underline-offset-4"
-        >
-          GISHMAS SUS TEST
-        </button>
       </div>
     </div>
+
+    {/* Login Trigger */}
+    <button 
+      onClick={() => setShowLogin(true)}
+      className="absolute top-4 right-4 text-white/40 hover:text-white text-sm font-bold uppercase tracking-widest transition-colors z-20 px-4 py-2"
+    >
+      Login
+    </button>
+
+    {/* Login Modal */}
+    {showLogin && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200">
+        <div className="bg-white p-8 rounded-3xl w-full max-w-sm relative shadow-2xl border-4 border-slate-100">
+          <button onClick={() => setShowLogin(false)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"><X /></button>
+          <h2 className="text-2xl font-black text-slate-800 mb-6 border-b-4 border-slate-100 pb-2">{isSignup ? 'Sign Up' : 'Login'}</h2>
+          <form onSubmit={handleAuthSubmit} className="space-y-4">
+            <input 
+              type="email" 
+              placeholder="Email" 
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-red-500 focus:bg-white transition-all placeholder:text-slate-300"
+            />
+            <input 
+              type="password" 
+              placeholder="Password" 
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-red-500 focus:bg-white transition-all placeholder:text-slate-300"
+            />
+            {error && <p className="text-red-600 font-black text-sm animate-pulse">{error}</p>}
+            <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xl py-4 rounded-xl shadow-lg transition-transform active:scale-95">
+              {isSignup ? 'Create Account' : 'Login'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsSignup(!isSignup)}
+              className="w-full text-center text-sm font-bold text-slate-500 hover:text-red-600 transition-colors"
+            >
+              {isSignup ? 'Already have an account? Login' : "Don't have an account? Sign up"}
+            </button>
+          </form>
+        </div>
+      </div>
+    )}
   </div>
   );
 };
@@ -89,26 +214,57 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
   const [wheelRotation, setWheelRotation] = useState(0);
   const [prizeWon, setPrizeWon] = useState(false);
 
-  // Gishmas Unlock Dates (Assuming Day 1 is Dec 18, 2025)
-  const START_DATE = new Date('2025-12-18T00:00:00'); 
-  const today = new Date();
-  
-  // Calculate unlocked day based on time difference from start date
-  // Day 1 is unlocked on/after Dec 18
-  // Day 2 is unlocked on/after Dec 19, etc.
-  const daysSinceStart = Math.floor((today.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24));
-  const unlockedDay = Math.max(1, daysSinceStart + 1);
+  // Audio State
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const unlockedDay = 1; // UNLOCK DAY 1 ONLY (Others permanently locked for now)
 
   useEffect(() => {
-    // Check if wheel has been spun in this session
-    // const hasSpun = sessionStorage.getItem('gishmas_wheel_spun');
-    // if (!hasSpun) {
-    //   const timer = setTimeout(() => {
-    //     // setShowWheel(true); // DISABLED: Auto-popup removed
-    //   }, 3000);
-    //   return () => clearTimeout(timer);
-    // }
+    // Play Gish theme on homepage load
+    const themeAudio = new Audio('/assets/gishmas-theme.mp3');
+    themeAudio.loop = true;
+    themeAudio.volume = 0.5; // Increased volume to 50%
+    audioRef.current = themeAudio;
+
+    const playAudio = async () => {
+      try {
+        await themeAudio.play();
+        setIsPlaying(true);
+      } catch (e) {
+        // Autoplay blocked - will try on user interaction
+        console.log('Autoplay blocked');
+        setIsPlaying(false);
+      }
+    };
+    playAudio();
+
+    return () => {
+      if (themeAudio) {
+        themeAudio.pause();
+        themeAudio.currentTime = 0;
+      }
+    };
   }, []);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const restartAudio = () => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = 0;
+    if (!isPlaying) {
+        audioRef.current.play();
+        setIsPlaying(true);
+    }
+  };
 
   const spinTheWheel = () => {
     if (spinning || prizeWon) return;
@@ -175,10 +331,10 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
         <X size={24} />
       </button>
 
-      <div className="relative z-10 w-full max-w-4xl pt-12 flex flex-col items-center">
-        <h1 className="text-5xl md:text-7xl font-black text-green-600 tracking-tighter leading-none flex items-center gap-2 drop-shadow-sm mb-12 whitespace-nowrap" style={{ fontFamily: '"Mountains of Christmas", cursive' }}>
-          <span>12 DAYS OF</span>
-          <span>GISHMAS</span>
+      <div className="relative z-10 w-full max-w-4xl pt-8 md:pt-12 flex flex-col items-center">
+        <h1 className="text-6xl md:text-8xl font-bold text-green-600 tracking-tight leading-none flex flex-wrap justify-center items-center gap-x-3 mb-10 px-2 text-center" style={{ fontFamily: '"Mountains of Christmas", cursive' }}>
+          <span className="text-white drop-shadow-sm">12 DAYS OF</span>
+          <span className="text-green-500 drop-shadow-sm">GISHMAS</span>
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
@@ -191,7 +347,7 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
               <>
                 <div className="text-4xl mb-4 group-hover:animate-bounce">🎅</div>
                 <h2 className="text-2xl font-black text-red-600 mb-2">DAY 1</h2>
-                <p className="font-bold text-slate-600">DAILY SPIN 🎰</p>
+                <p className="font-bold text-slate-600">SPIN THE WHEEL</p>
               </>
             ) : (
                <div className="flex flex-col items-center justify-center h-full">
@@ -214,15 +370,36 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
                 
                 <div className={`text-4xl mb-4 ${!isUnlocked && 'opacity-50'}`}>{isUnlocked ? '🎁' : '🔒'}</div>
                 <h2 className={`text-2xl font-black mb-2 ${isUnlocked ? 'text-green-600' : 'text-white/50'}`}>DAY {day}</h2>
-                <p className={`font-bold ${isUnlocked ? 'text-slate-600' : 'text-white/30'}`}>
+                <p className={`font-bold ${isUnlocked ? 'text-slate-600' : 'text-white/30'} ${day === 2 && !isUnlocked ? 'text-xs tracking-tighter' : ''}`}>
                   {isUnlocked 
                     ? (day === 3 ? 'GTA 6' : '???')
-                    : 'LOCKED'
+                    : (day === 2 ? 'GISHMAS SUS CHECKER V2' : (day === 3 ? 'GTA 6' : '???'))
                   }
                 </p>
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Now Playing Bar (centered) */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-white/50 text-slate-900 text-xs md:text-sm font-bold px-5 py-3 rounded-full border border-white/40 shadow-lg flex items-center gap-3 backdrop-blur-md">
+        <button
+          onClick={togglePlay}
+          className="p-2 bg-white/50 hover:bg-white/70 rounded-full text-slate-900 transition-colors active:scale-95"
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+        >
+          {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+        </button>
+        <button
+          onClick={restartAudio}
+          className="p-2 bg-white/50 hover:bg-white/70 rounded-full text-slate-900 transition-colors active:scale-95"
+          aria-label="Restart"
+        >
+          <RotateCcw size={18} />
+        </button>
+        <div className="flex items-center gap-2">
+          <span>Now Playing: GISHMAS THEME (OG)[V2]</span>
         </div>
       </div>
     </div>
@@ -241,7 +418,11 @@ export default function App() {
         if (token && token !== "undefined") {
           await signInWithCustomToken(auth, token);
         } else {
-          await signInAnonymously(auth);
+          // Only sign in anonymously if not already signed in (to allow admin login to persist)
+          // onAuthStateChanged handles user state updates
+          if (!auth.currentUser) {
+             await signInAnonymously(auth);
+          }
         }
       } catch (e) {
         console.error("Auth initialization failed", e);
@@ -252,8 +433,21 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  const handleLogin = async (email: string, pass: string) => {
+    await signInWithEmailAndPassword(auth, email, pass);
+  };
+
+  const handleSignUp = async (email: string, pass: string) => {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    // Save basic user info in Firestore
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      email,
+      createdAt: serverTimestamp()
+    });
+  };
+
   if (currentPage === 'landing') {
-    return <LandingPage onEnter={() => setCurrentPage('home')} onSusTest={() => setCurrentPage('sus-test')} />;
+    return <LandingPage onEnter={() => setCurrentPage('home')} onLogin={handleLogin} onSignup={handleSignUp} />;
   }
 
   if (currentPage === 'home') {
