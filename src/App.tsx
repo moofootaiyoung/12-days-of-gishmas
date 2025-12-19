@@ -20,8 +20,7 @@ import {
   X,
   Trophy,
   Play,
-  Pause,
-  RotateCcw
+  Pause
 } from 'lucide-react';
 import { SusTest } from './SusTest';
 
