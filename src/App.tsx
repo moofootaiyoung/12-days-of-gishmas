@@ -246,15 +246,6 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
     setIsPlaying(!isPlaying);
   };
 
-  const restartAudio = () => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = 0;
-    if (!isPlaying) {
-        audioRef.current.play();
-        setIsPlaying(true);
-    }
-  };
-
   const spinTheWheel = () => {
     if (spinning || prizeWon) return;
     setSpinning(true);
@@ -320,11 +311,11 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
         <X size={24} />
       </button>
 
-      <div className="relative z-10 w-full max-w-4xl -mt-24 md:-mt-20 flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-4xl mt-4 md:-mt-20 flex flex-col items-center">
         <img 
           src="/assets/Untitled.png" 
           alt="12 Days of Gishmas" 
-          className="max-w-full h-auto -mb-20 px-4 drop-shadow-lg"
+          className="max-w-full h-auto mb-4 md:-mb-20 px-4 drop-shadow-lg"
           style={{ maxHeight: '350px' }}
         />
 
@@ -391,7 +382,7 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
       </div>
 
       {/* Now Playing Bar (centered) */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-white/50 text-slate-900 text-xs md:text-sm font-bold px-5 py-3 rounded-full border border-white/40 shadow-lg flex items-center gap-3 backdrop-blur-md">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-white/50 text-slate-900 text-xs md:text-sm font-bold px-3 py-2 md:px-5 md:py-3 rounded-full border border-white/40 shadow-lg flex items-center gap-3 backdrop-blur-md">
         <button
           onClick={togglePlay}
           className="p-2 bg-white/50 hover:bg-white/70 rounded-full text-slate-900 transition-colors active:scale-95"
@@ -399,14 +390,7 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
         >
           {isPlaying ? <Pause size={18} /> : <Play size={18} />}
         </button>
-        <button
-          onClick={restartAudio}
-          className="p-2 bg-white/50 hover:bg-white/70 rounded-full text-slate-900 transition-colors active:scale-95"
-          aria-label="Restart"
-        >
-          <RotateCcw size={18} />
-        </button>
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           <span>Now Playing: GISHMAS THEME (OG)[V2]</span>
         </div>
       </div>
