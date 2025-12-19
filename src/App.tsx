@@ -54,6 +54,10 @@ const Snowfall = () => (
         20% { opacity: 1; }
         100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
       }
+      @keyframes pop {
+        0% { transform: scale(0.5); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
     `}</style>
   </div>
 );
@@ -201,6 +205,7 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
   const [spinning, setSpinning] = useState(false);
   const [wheelRotation, setWheelRotation] = useState(0);
   const [prizeWon, setPrizeWon] = useState(false);
+  const [showCoupon, setShowCoupon] = useState(false); // Shows after 3 seconds
 
   // Audio State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -209,6 +214,11 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
   const unlockedDay = 1; // UNLOCK DAY 1 ONLY (Others permanently locked for now)
 
   useEffect(() => {
+    // Show coupon after 3 seconds
+    const timer = setTimeout(() => {
+      setShowCoupon(true);
+    }, 3000);
+
     // Play Gish theme on homepage load
     const themeAudio = new Audio('/assets/gishmas-theme.mp3');
     themeAudio.loop = false; // Don't auto-replay, user can restart manually
@@ -260,6 +270,45 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-700 to-green-900 font-sans p-4 relative selection:bg-green-400 selection:text-green-900 uppercase overflow-x-hidden text-slate-900 flex flex-col items-center">
       <Snowfall />
+      
+      {/* COUPON MODAL */}
+      {showCoupon && (
+        <div 
+          className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          style={{ zIndex: 99999 }}
+        >
+          <div className="relative bg-white p-4 rounded-xl shadow-2xl max-w-md w-full text-center">
+            <button 
+              onClick={() => setShowCoupon(false)} 
+              className="absolute -top-3 -right-3 z-10 bg-red-600 text-white p-2 rounded-full border-2 border-white shadow-xl hover:scale-110 transition-transform"
+            >
+              <X size={20} />
+            </button>
+            <h2 className="text-2xl md:text-3xl font-black text-red-600 mb-3">
+              ITS GISHMAS DAY!!<br/>
+              <span className="text-green-600">HERE'S A SPECIAL GIFT!!!</span>
+            </h2>
+            <img 
+              src="/assets/hiro-coupon-final-compressed.jpg" 
+              alt="Special Coupon" 
+              className="w-full h-auto rounded-lg"
+            />
+            <button
+              onClick={() => {
+                const printWindow = window.open('/assets/hiro-coupon-final-compressed.jpg', '_blank');
+                if (printWindow) {
+                  printWindow.onload = () => {
+                    printWindow.print();
+                  };
+                }
+              }}
+              className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all hover:scale-105 active:scale-95"
+            >
+              🖨️ PRINT COUPON
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* WHEEL MODAL */}
       {showWheel && (
@@ -389,9 +438,6 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
         >
           {isPlaying ? <Pause size={18} /> : <Play size={18} />}
         </button>
-        <div className="hidden md:flex items-center gap-2">
-          <span>Now Playing: GISHMAS THEME (OG)[V2]</span>
-        </div>
       </div>
     </div>
   );
@@ -409,10 +455,12 @@ export default function App() {
         if (token && token !== "undefined") {
           await signInWithCustomToken(auth, token);
         } else {
-          // Only sign in anonymously if not already signed in (to allow admin login to persist)
-          // onAuthStateChanged handles user state updates
           if (!auth.currentUser) {
-             await signInAnonymously(auth);
+             try {
+               await signInAnonymously(auth);
+             } catch (authError: any) {
+               console.warn("Auth skipped/failed (likely demo key):", authError.code);
+             }
           }
         }
       } catch (e) {
