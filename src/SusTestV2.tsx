@@ -64,8 +64,7 @@ export const SusTestV2 = ({ user, db, appId, onBack }: SusTestV2Props) => {
   const [step, setStep] = useState(0); 
   const [guestName, setGuestName] = useState('');
   const [q1, setQ1] = useState(0); 
-  const [q2, setQ2] = useState(0); 
-  const [q3, setQ3] = useState(0);
+  const [q2, setQ2] = useState(0);
   
   // Result Animation
   const [resultAnimation, setResultAnimation] = useState<string | null>(null);
@@ -109,7 +108,6 @@ export const SusTestV2 = ({ user, db, appId, onBack }: SusTestV2Props) => {
     if (step === 1 && score !== undefined) setQ1(score);
     if (step === 2 && score !== undefined) setQ2(score);
     if (step === 3 && score !== undefined) {
-      setQ3(score);
       submitVibeCheck(score); 
     } else {
       setStep(prev => prev + 1);
