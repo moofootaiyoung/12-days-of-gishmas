@@ -127,19 +127,6 @@ const LandingPage = ({ onEnter, onLogin, onSignup }: { onEnter: () => void, onLo
 
   return (
   <div className="min-h-screen bg-gradient-to-b from-red-700 to-green-900 relative overflow-hidden flex flex-col items-center justify-center p-4 text-center font-sans uppercase">
-    {/* Video Background */}
-    <video 
-      autoPlay 
-      muted 
-      loop 
-      playsInline 
-      className="absolute inset-0 w-full h-full object-contain z-0"
-    >
-      <source src="/assets/raza-body-gishmas-edit-2-cropped.mp4" type="video/mp4" />
-    </video>
-    {/* Overlay to blend video with background */}
-    <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-red-700/70 via-black/40 to-green-900/70" />
-
     {/* Content */}
     <div className="relative z-10 w-full flex flex-col items-center">
       <div className="inline-block bg-white/95 border-4 border-red-600 shadow-[10px_10px_0_#15803d] p-6 md:p-12 rounded-[2rem] md:rounded-[3rem] rotate-2 transform hover:rotate-0 transition-all duration-500 animate-[violent-shake_0.5s_infinite] mb-8 md:mb-12">
@@ -159,16 +146,18 @@ const LandingPage = ({ onEnter, onLogin, onSignup }: { onEnter: () => void, onLo
       </div>
     </div>
 
-    {/* Login Trigger */}
+    {/* Login Trigger - DISABLED */}
+    {false && (
     <button 
       onClick={() => setShowLogin(true)}
       className="absolute top-4 right-4 text-white/40 hover:text-white text-sm font-bold uppercase tracking-widest transition-colors z-20 px-4 py-2"
     >
       Login
     </button>
+    )}
 
     {/* Login Modal */}
-    {showLogin && (
+    {false && showLogin && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200">
         <div className="bg-white p-8 rounded-3xl w-full max-w-sm relative shadow-2xl border-4 border-slate-100">
           <button onClick={() => setShowLogin(false)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"><X /></button>
@@ -223,7 +212,7 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
   useEffect(() => {
     // Play Gish theme on homepage load
     const themeAudio = new Audio('/assets/gishmas-theme.mp3');
-    themeAudio.loop = true;
+    themeAudio.loop = false; // Don't auto-replay, user can restart manually
     themeAudio.volume = 0.5; // Increased volume to 50%
     audioRef.current = themeAudio;
 
@@ -331,11 +320,13 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
         <X size={24} />
       </button>
 
-      <div className="relative z-10 w-full max-w-4xl pt-8 md:pt-12 flex flex-col items-center">
-        <h1 className="text-6xl md:text-8xl font-bold text-green-600 tracking-tight leading-none flex flex-wrap justify-center items-center gap-x-3 mb-10 px-2 text-center" style={{ fontFamily: '"Mountains of Christmas", cursive' }}>
-          <span className="text-white drop-shadow-sm">12 DAYS OF</span>
-          <span className="text-green-500 drop-shadow-sm">GISHMAS</span>
-        </h1>
+      <div className="relative z-10 w-full max-w-4xl -mt-24 md:-mt-20 flex flex-col items-center">
+        <img 
+          src="/assets/Untitled.png" 
+          alt="12 Days of Gishmas" 
+          className="max-w-full h-auto -mb-20 px-4 drop-shadow-lg"
+          style={{ maxHeight: '350px' }}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
             {/* Day 1 - Daily Spin */}
@@ -379,6 +370,23 @@ const HomePage = ({ onBack }: { onBack: () => void }) => {
               </div>
             );
           })}
+        </div>
+
+        {/* Goofy Copyright Footer */}
+        <div className="mt-16 mb-24 text-center text-white/30 text-[10px] font-mono px-4">
+          <p>© 1847-2099 GISHMAS INTERNATIONAL HOLDINGS LLC™ | All Rights Reserved (lol not really)</p>
+          <p className="mt-1 flex flex-wrap justify-center gap-2">
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white/60 underline">Privacy Policy</a>
+            <span>|</span>
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white/60 underline">Terms of Surrender</a>
+            <span>|</span>
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white/60 underline">Cookie Preferences (we ate them all)</a>
+            <span>|</span>
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white/60 underline">Contact Santa</a>
+            <span>|</span>
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white/60 underline">Careers (we're not hiring)</a>
+          </p>
+          <p className="mt-1 italic">This site is definitely not a front for elves. Trust us.</p>
         </div>
       </div>
 
