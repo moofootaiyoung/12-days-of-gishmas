@@ -360,21 +360,6 @@
             background: rgba(0,0,0,0.9);
             border-color: white;
         }
-        /* Graphics quality indicator */
-        .quality-badge {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #ff0066, #6600ff);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 1000;
-            text-shadow: 1px 1px 2px black;
-            box-shadow: 0 4px 15px rgba(255,0,102,0.5);
-        }
     </style>
     <script type="importmap">
         {
@@ -387,7 +372,6 @@
 </head>
 <body>
     <button class="back-btn" onclick="window.parent.postMessage('goBack', '*')">✕ EXIT</button>
-    <div class="quality-badge">🔥 ULTRA HD 8K</div>
     <div id="canvas-container"></div>
     <div id="ui-layer">
         <div class="radar-frame">
@@ -433,13 +417,7 @@
     <div id="start-screen">
         <div class="title-logo">GTA VI</div>
         <div class="subtitle">Superior Edition</div>
-        <div class="features">
-            <p>✔ ULTRA HD 8K Graphics</p>
-            <p>✔ Ray-Traced Reflections</p>
-            <p>✔ 0% Microtransactions</p>
-            <p>✔ 100% Legal (Trust me bro)</p>
-        </div>
-        <button class="start-btn" id="play-btn">Tap to Play</button>
+        <button class="start-btn" id="play-btn">PLAY</button>
     </div>
     <script type="module">
         import * as THREE from 'three';
@@ -1301,7 +1279,6 @@
         const btnAction = document.getElementById('btn-action');
         const btnFire = document.getElementById('btn-fire');
         const btnReload = document.getElementById('btn-reload');
-        const btnMission = document.getElementById('btn-mission');
         const triggerAction = (e) => { 
             e.preventDefault(); 
             if (gameState.mode === 'walking') {
@@ -1331,7 +1308,6 @@
         btnFire.addEventListener('click', triggerFire);
         btnReload.addEventListener('touchstart', triggerReload);
         btnReload.addEventListener('click', triggerReload);
-        btnMission.addEventListener('click', generateMission);
         
         // Mouse click to fire
         document.addEventListener('mousedown', (e) => {
@@ -1589,13 +1565,11 @@
                 playerGroup.position.y = 0;
                 playerGroup.visible = true;
                 btnAction.innerHTML = '🚗';
-                btnMission.style.display = 'block';
             } else {
                 if (playerGroup.position.distanceTo(carGroup.position) < 6) {
                     gameState.mode = 'driving';
                     playerGroup.visible = false;
                     btnAction.innerHTML = '🚪';
-                    btnMission.style.display = 'none';
                 }
             }
         }
