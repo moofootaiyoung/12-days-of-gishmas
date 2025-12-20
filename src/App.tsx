@@ -25,8 +25,23 @@ import {
 import { SusTest } from './SusTest';
 import { SusTestV2 } from './SusTestV2';
 
-// --- Firebase Initialization (Using Sandbox Globals) ---
-const firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+// --- Firebase Initialization ---
+// Use sandbox globals if available, otherwise use fallback config
+let firebaseConfig: any;
+try {
+  firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+} catch {
+  // Fallback config - REPLACE WITH YOUR OWN FIREBASE CONFIG for cross-device sync
+  firebaseConfig = {
+    apiKey: "demo-key",
+    authDomain: "demo.firebaseapp.com",
+    projectId: "demo-project",
+    storageBucket: "demo.appspot.com",
+    messagingSenderId: "000000000000",
+    appId: "demo-app-id"
+  };
+  console.warn("Using demo Firebase config - data will only save locally. Set up a real Firebase project for cross-device sync.");
+}
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -206,8 +221,17 @@ const HomePage = ({ onBack, onSusTestV2, onGta6 }: { onBack: () => void; onSusTe
   const [spinning, setSpinning] = useState(false);
   const [wheelRotation, setWheelRotation] = useState(0);
   const [prizeWon, setPrizeWon] = useState(false);
+  const [showHotdog, setShowHotdog] = useState(false);
 
   const unlockedDay = 3; // UNLOCK DAY 1, DAY 2, AND DAY 3
+  
+  const claimPrize = () => {
+    setShowHotdog(true);
+    setTimeout(() => {
+      setShowHotdog(false);
+      setShowWheel(false);
+    }, 2500);
+  };
 
   const spinTheWheel = () => {
     if (spinning || prizeWon) return;
@@ -256,7 +280,7 @@ const HomePage = ({ onBack, onSusTestV2, onGta6 }: { onBack: () => void; onSusTe
             {prizeWon ? (
               <div className="animate-[throb_0.5s_infinite]">
                 <h3 className="text-4xl font-black text-red-600 mb-6 drop-shadow-lg">SUCK A DICK!</h3>
-                <button onClick={() => { setShowWheel(false); }} className="bg-green-600 hover:bg-green-700 text-white font-black text-xl py-4 px-10 rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95">CLAIM PRIZE</button>
+                <button onClick={claimPrize} className="bg-green-600 hover:bg-green-700 text-white font-black text-xl py-4 px-10 rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95">CLAIM PRIZE</button>
               </div>
             ) : (
               <button onClick={spinTheWheel} disabled={spinning} className="bg-yellow-400 hover:bg-yellow-300 border-4 border-black font-black text-2xl py-4 px-12 rounded-full shadow-[0_6px_0_#000] active:shadow-none active:translate-y-1 transition-all disabled:opacity-50">
@@ -286,14 +310,29 @@ const HomePage = ({ onBack, onSusTestV2, onGta6 }: { onBack: () => void; onSusTe
             {/* Day 1 - Daily Spin */}
           <button 
             onClick={() => setShowWheel(true)}
-            className={`p-8 rounded-[2rem] border-[6px] shadow-[0_8px_0_#854d0e] hover:scale-105 active:scale-95 active:shadow-none active:translate-y-2 transition-all group ${unlockedDay >= 1 ? 'bg-white border-yellow-400 hover:bg-yellow-100' : 'bg-black/20 border-white/10 opacity-60 pointer-events-none'}`}
+            className={`p-8 rounded-[2rem] border-[6px] shadow-[0_8px_0_#854d0e] hover:scale-105 active:scale-95 active:shadow-none active:translate-y-2 transition-all group relative overflow-hidden ${unlockedDay >= 1 ? 'bg-white border-yellow-400 hover:bg-yellow-100' : 'bg-black/20 border-white/10 opacity-60 pointer-events-none'}`}
           >
+            {/* Transparent wheel background */}
+            {unlockedDay >= 1 && (
+              <div 
+                className="absolute inset-0 opacity-15 pointer-events-none"
+                style={{
+                  background: 'conic-gradient(#ef4444 0% 12.5%, #22c55e 12.5% 25%, #ef4444 25% 37.5%, #22c55e 37.5% 50%, #ef4444 50% 62.5%, #22c55e 62.5% 75%, #ef4444 75% 87.5%, #22c55e 87.5% 100%)',
+                  borderRadius: '50%',
+                  width: '200%',
+                  height: '200%',
+                  top: '-50%',
+                  left: '-50%',
+                  transform: 'scale(0.8)'
+                }}
+              />
+            )}
             {unlockedDay >= 1 ? (
-              <>
+              <div className="relative z-10">
                 <div className="text-4xl mb-4 group-hover:animate-bounce">🎅</div>
                 <h2 className="text-2xl font-black text-red-600 mb-2">DAY 1</h2>
                 <p className="font-bold text-slate-600">SPIN THE WHEEL</p>
-              </>
+              </div>
             ) : (
                <div className="flex flex-col items-center justify-center h-full">
                 <div className="text-4xl mb-4 opacity-50">🔒</div>
@@ -328,10 +367,10 @@ const HomePage = ({ onBack, onSusTestV2, onGta6 }: { onBack: () => void; onSusTe
                  <button
                    key={day}
                    onClick={onGta6}
-                   className="p-8 rounded-[2rem] border-[6px] flex flex-col items-center justify-center relative overflow-hidden group transition-all bg-white border-green-500 shadow-[0_8px_0_#15803d] hover:scale-105 active:scale-95 active:shadow-none active:translate-y-2"
+                   className="p-8 rounded-[2rem] border-[6px] flex flex-col items-center justify-center relative overflow-hidden group transition-all bg-white border-red-500 shadow-[0_8px_0_#b91c1c] hover:scale-105 active:scale-95 active:shadow-none active:translate-y-2"
                  >
-                   <div className="text-4xl mb-4 group-hover:animate-bounce">🎁</div>
-                   <h2 className="text-2xl font-black mb-2 text-green-600">DAY {day}</h2>
+                   <div className="text-4xl mb-4 group-hover:animate-bounce">🎮</div>
+                   <h2 className="text-2xl font-black mb-2 text-red-600">DAY {day}</h2>
                    <p className="font-bold text-slate-600">GTA 6</p>
                  </button>
                );

@@ -83,11 +83,11 @@ export const SusTestV2 = ({ user, db, appId, onBack }: SusTestV2Props) => {
     }
   }, []);
 
-  // Also try Firestore sync if available
+  // Try Firestore sync (works even without auth for public collection)
   useEffect(() => {
-    if (!user) return;
     try {
-      const guestsRef = collection(db, 'artifacts', appId, 'public', 'data', 'guests_v2');
+      // Use a simple public collection path
+      const guestsRef = collection(db, 'gishmas_sus_guests');
       const unsubscribe = onSnapshot(guestsRef, (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Guest));
         const sorted = data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
@@ -95,13 +95,13 @@ export const SusTestV2 = ({ user, db, appId, onBack }: SusTestV2Props) => {
         // Also save to localStorage as backup
         localStorage.setItem('gishmas_sus_v2_guests', JSON.stringify(sorted));
       }, (error) => {
-        console.warn("Firestore error:", error);
+        console.warn("Firestore sync error (using localStorage):", error);
       });
       return () => unsubscribe();
     } catch (e) {
       console.warn("Firestore setup error:", e);
     }
-  }, [user, db, appId]);
+  }, [db]);
 
   // --- Handlers ---
   const handleNextStep = (score?: number) => {
@@ -141,19 +141,17 @@ export const SusTestV2 = ({ user, db, appId, onBack }: SusTestV2Props) => {
     setGuests(updatedGuests);
     localStorage.setItem('gishmas_sus_v2_guests', JSON.stringify(updatedGuests));
 
-    // Also try to save to Firebase if available
-    if (user) {
-      try {
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'guests_v2'), {
-          name: guestName.trim(),
-          reason,
-          susLevel: totalScore > 150 ? 'high' : isSus ? 'medium' : 'low',
-          status: status,
-          createdAt: serverTimestamp()
-        });
-      } catch (e) { 
-        console.warn("Firebase save failed, using localStorage only:", e);
-      }
+    // Also try to save to Firebase
+    try {
+      await addDoc(collection(db, 'gishmas_sus_guests'), {
+        name: guestName.trim(),
+        reason,
+        susLevel: totalScore > 150 ? 'high' : isSus ? 'medium' : 'low',
+        status: status,
+        createdAt: serverTimestamp()
+      });
+    } catch (e) { 
+      console.warn("Firebase save failed, using localStorage only:", e);
     }
 
     setTimeout(() => {

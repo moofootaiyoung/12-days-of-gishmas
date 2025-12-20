@@ -386,7 +386,7 @@
     </script>
 </head>
 <body>
-    <button class="back-btn" onclick="window.parent.postMessage('goBack', '*')">← BACK</button>
+    <button class="back-btn" onclick="window.parent.postMessage('goBack', '*')">✕ EXIT</button>
     <div class="quality-badge">🔥 ULTRA HD 8K</div>
     <div id="canvas-container"></div>
     <div id="ui-layer">
@@ -394,7 +394,7 @@
             <canvas id="radar-canvas" width="150" height="150"></canvas>
         </div>
         <div class="hud-top-right">
-            <div class="money" id="money-display">$1,200,500</div>
+            <div class="money" id="money-display">$1,000</div>
             <div class="ammo" id="ammo-display">16 / 16</div>
             <div class="location-tag">Vice Beach</div>
         </div>
@@ -406,10 +406,9 @@
             </div>
             
             <div id="action-zone">
-                <button id="btn-mission">✨ NEW MISSION</button>
-                <div id="btn-reload" class="action-btn">🔄</div>
-                <div id="btn-fire" class="action-btn">🔥</div>
-                <div id="btn-action" class="action-btn">🚪</div>
+                <div id="btn-reload" class="action-btn">R</div>
+                <div id="btn-fire" class="action-btn">FIRE</div>
+                <div id="btn-action" class="action-btn">E</div>
             </div>
             <div id="pedals-zone">
                 <div class="pedal brake" id="btn-brake">S</div>
@@ -897,27 +896,74 @@
             createStreetLamp(x, 25);
         }
 
-        // --- PLAYER ---
+        // --- PLAYER (Detailed character) ---
         const playerGroup = new THREE.Group();
         playerGroup.visible = false;
         
-        const playerMat = new THREE.MeshStandardMaterial({ 
-            color: 0x00aaff, 
-            roughness: 0.4,
-            metalness: 0.2
-        });
-        const pBody = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1.0, 8, 16), playerMat);
-        pBody.position.y = 1.0;
-        pBody.castShadow = true;
-        playerGroup.add(pBody);
-        
-        // Better sunglasses
-        const pGlasses = new THREE.Mesh(
-            new THREE.BoxGeometry(0.65, 0.18, 0.45), 
-            new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.1 })
-        );
-        pGlasses.position.set(0, 1.55, 0.22);
+        const skinTone = 0xffdbac;
+        const shirtColor = 0x2196F3; // Blue shirt
+        const pantsColor = 0x1a1a2e; // Dark jeans
+        const hairColor = 0x2c1810; // Dark brown hair
+
+        // Head
+        const headGeo = new THREE.SphereGeometry(0.28, 16, 16);
+        const headMat = new THREE.MeshStandardMaterial({ color: skinTone, roughness: 0.7 });
+        const pHead = new THREE.Mesh(headGeo, headMat);
+        pHead.position.y = 1.7;
+        pHead.castShadow = true;
+        playerGroup.add(pHead);
+
+        // Hair
+        const hairGeo = new THREE.SphereGeometry(0.3, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+        const hairMat = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.9 });
+        const pHair = new THREE.Mesh(hairGeo, hairMat);
+        pHair.position.y = 1.78;
+        playerGroup.add(pHair);
+
+        // Sunglasses
+        const glassesMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.1 });
+        const pGlasses = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.12), glassesMat);
+        pGlasses.position.set(0, 1.72, 0.22);
         playerGroup.add(pGlasses);
+
+        // Torso
+        const torsoGeo = new THREE.CylinderGeometry(0.25, 0.28, 0.65, 12);
+        const torsoMat = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.6 });
+        const pTorso = new THREE.Mesh(torsoGeo, torsoMat);
+        pTorso.position.y = 1.2;
+        pTorso.castShadow = true;
+        playerGroup.add(pTorso);
+
+        // Arms
+        const armGeo = new THREE.CylinderGeometry(0.07, 0.08, 0.55, 8);
+        const armMat = new THREE.MeshStandardMaterial({ color: skinTone, roughness: 0.7 });
+        [-0.35, 0.35].forEach(xOff => {
+            const arm = new THREE.Mesh(armGeo, armMat);
+            arm.position.set(xOff, 1.1, 0);
+            arm.rotation.z = xOff > 0 ? -0.12 : 0.12;
+            arm.castShadow = true;
+            playerGroup.add(arm);
+        });
+
+        // Legs
+        const legGeo = new THREE.CylinderGeometry(0.1, 0.11, 0.75, 8);
+        const legMat = new THREE.MeshStandardMaterial({ color: pantsColor, roughness: 0.8 });
+        [-0.14, 0.14].forEach(xOff => {
+            const leg = new THREE.Mesh(legGeo, legMat);
+            leg.position.set(xOff, 0.5, 0);
+            leg.castShadow = true;
+            playerGroup.add(leg);
+        });
+
+        // Shoes
+        const shoeGeo = new THREE.BoxGeometry(0.14, 0.1, 0.25);
+        const shoeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }); // White sneakers
+        [-0.14, 0.14].forEach(xOff => {
+            const shoe = new THREE.Mesh(shoeGeo, shoeMat);
+            shoe.position.set(xOff, 0.08, 0.04);
+            playerGroup.add(shoe);
+        });
+
         scene.add(playerGroup);
 
         // --- NPC ---
@@ -1095,67 +1141,67 @@
             }
         }
 
-        // --- CAR (Much more detailed) ---
+        // --- CAR (Clean sports car design) ---
         const carGroup = new THREE.Group();
         
-        const carPaint = new THREE.MeshPhysicalMaterial({
-            color: 0xff2266,
-            metalness: 0.6,
-            roughness: 0.2,
-            clearcoat: 0.8,
-            clearcoatRoughness: 0.1,
-            emissive: 0x220011,
-            emissiveIntensity: 0.15
+        const carPaint = new THREE.MeshStandardMaterial({
+            color: 0xff3355,
+            metalness: 0.8,
+            roughness: 0.2
         });
 
-        // Main body - sports car shape
-        const bodyShape = new THREE.Shape();
-        bodyShape.moveTo(-1, 0);
-        bodyShape.lineTo(-0.9, 0.3);
-        bodyShape.lineTo(-0.8, 0.5);
-        bodyShape.lineTo(0.8, 0.5);
-        bodyShape.lineTo(0.9, 0.3);
-        bodyShape.lineTo(1, 0);
-        bodyShape.lineTo(-1, 0);
+        const glassMat2 = new THREE.MeshStandardMaterial({ 
+            color: 0x4488aa,
+            roughness: 0.1, 
+            metalness: 0.3,
+            transparent: true,
+            opacity: 0.7
+        });
 
-        const extrudeSettings = { depth: 4.5, bevelEnabled: true, bevelSize: 0.1, bevelThickness: 0.1 };
-        const bodyGeo = new THREE.ExtrudeGeometry(bodyShape, extrudeSettings);
+        // Main body (low sleek shape)
+        const bodyGeo = new THREE.BoxGeometry(2.0, 0.5, 4.5);
         const body = new THREE.Mesh(bodyGeo, carPaint);
-        body.rotation.x = -Math.PI / 2;
-        body.position.set(0, 0.5, -2.25);
+        body.position.set(0, 0.5, 0);
         body.castShadow = true;
         carGroup.add(body);
 
-        // Cabin
-        const cabinGeo = new THREE.BoxGeometry(1.6, 0.6, 2.2);
+        // Hood (front sloped)
+        const hoodGeo = new THREE.BoxGeometry(1.8, 0.3, 1.5);
+        const hood = new THREE.Mesh(hoodGeo, carPaint);
+        hood.position.set(0, 0.55, 1.8);
+        hood.castShadow = true;
+        carGroup.add(hood);
+
+        // Cabin/roof (low profile)
+        const cabinGeo = new THREE.BoxGeometry(1.6, 0.45, 1.8);
         const cabin = new THREE.Mesh(cabinGeo, carPaint);
-        cabin.position.set(0, 1.3, -0.3);
+        cabin.position.set(0, 0.95, -0.2);
         cabin.castShadow = true;
         carGroup.add(cabin);
         
-        // Windshield with proper glass material
-        const windshieldMat = new THREE.MeshPhysicalMaterial({ 
-            color: 0x88aacc,
-            roughness: 0.0, 
-            metalness: 0.1,
-            transmission: 0.9,
-            thickness: 0.1,
-            ior: 1.5
-        });
-        const windshield = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.58, 2.0), windshieldMat);
-        windshield.position.set(0, 1.32, -0.3);
+        // Windshield (angled)
+        const windshieldGeo = new THREE.BoxGeometry(1.5, 0.4, 0.1);
+        const windshield = new THREE.Mesh(windshieldGeo, glassMat2);
+        windshield.position.set(0, 0.9, 0.8);
+        windshield.rotation.x = -0.4;
         carGroup.add(windshield);
+
+        // Rear window
+        const rearWindowGeo = new THREE.BoxGeometry(1.4, 0.35, 0.1);
+        const rearWindow = new THREE.Mesh(rearWindowGeo, glassMat2);
+        rearWindow.position.set(0, 0.9, -1.1);
+        rearWindow.rotation.x = 0.3;
+        carGroup.add(rearWindow);
 
         // Headlights
         const headlightMat = new THREE.MeshStandardMaterial({ 
             color: 0xffffff, 
             emissive: 0xffffcc, 
-            emissiveIntensity: 1
+            emissiveIntensity: 0.8
         });
-        const headlightGeo = new THREE.CircleGeometry(0.2, 16);
-        [-0.6, 0.6].forEach(x => {
-            const hl = new THREE.Mesh(headlightGeo, headlightMat);
-            hl.position.set(x, 0.7, 2.3);
+        [-0.7, 0.7].forEach(x => {
+            const hl = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.12, 0.05), headlightMat);
+            hl.position.set(x, 0.55, 2.28);
             carGroup.add(hl);
         });
 
@@ -1163,71 +1209,46 @@
         const taillightMat = new THREE.MeshStandardMaterial({ 
             color: 0xff0000, 
             emissive: 0xff0000, 
-            emissiveIntensity: 0.8
+            emissiveIntensity: 0.6
         });
-        [-0.6, 0.6].forEach(x => {
-            const tl = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.15, 0.05), taillightMat);
-            tl.position.set(x, 0.7, -2.3);
+        [-0.7, 0.7].forEach(x => {
+            const tl = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.05), taillightMat);
+            tl.position.set(x, 0.55, -2.28);
             carGroup.add(tl);
         });
 
-        // Detailed wheels
-        const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.35, 24);
-        const tireMat = new THREE.MeshStandardMaterial({color: 0x1a1a1a, roughness: 0.9});
-        const rimMat = new THREE.MeshStandardMaterial({color: 0xcccccc, metalness: 0.9, roughness: 0.1});
+        // Wheels
+        const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.25, 16);
+        const tireMat = new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.9});
+        const rimMat = new THREE.MeshStandardMaterial({color: 0xaaaaaa, metalness: 0.9, roughness: 0.2});
         const wheels = [];
         
         function addWheel(x, z) {
             const wheelGroup = new THREE.Group();
-            
-            // Tire
             const tire = new THREE.Mesh(wheelGeo, tireMat);
             tire.rotation.z = Math.PI/2;
             wheelGroup.add(tire);
             
-            // Rim
-            const rimGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.36, 16);
+            const rimGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.26, 12);
             const rim = new THREE.Mesh(rimGeo, rimMat);
             rim.rotation.z = Math.PI/2;
             wheelGroup.add(rim);
             
-            // Rim spokes
-            for (let i = 0; i < 5; i++) {
-                const spokeGeo = new THREE.BoxGeometry(0.38, 0.05, 0.05);
-                const spoke = new THREE.Mesh(spokeGeo, rimMat);
-                spoke.rotation.z = (i / 5) * Math.PI * 2;
-                spoke.position.x = x > 0 ? 0.18 : -0.18;
-                wheelGroup.add(spoke);
-            }
-            
-            wheelGroup.position.set(x, 0.42, z);
+            wheelGroup.position.set(x, 0.35, z);
             wheelGroup.castShadow = true;
             carGroup.add(wheelGroup);
             wheels.push(wheelGroup);
         }
         
-        addWheel(1.0, 1.4); addWheel(-1.0, 1.4);
-        addWheel(1.0, -1.4); addWheel(-1.0, -1.4);
+        addWheel(1.05, 1.5); addWheel(-1.05, 1.5);
+        addWheel(1.05, -1.5); addWheel(-1.05, -1.5);
 
         // Side mirrors
-        const mirrorMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8 });
         [-1.05, 1.05].forEach(x => {
-            const mirror = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.1, 0.25), mirrorMat);
-            mirror.position.set(x, 1.2, 0.5);
+            const mirror = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.15), carPaint);
+            mirror.position.set(x, 0.85, 0.6);
             carGroup.add(mirror);
         });
-
-        // Spoiler
-        const spoilerMat = carPaint.clone();
-        const spoiler = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 0.4), spoilerMat);
-        spoiler.position.set(0, 1.1, -2.1);
-        carGroup.add(spoiler);
-        const spoilerStand1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.3, 0.1), spoilerMat);
-        spoilerStand1.position.set(-0.6, 0.95, -2.1);
-        carGroup.add(spoilerStand1);
-        const spoilerStand2 = spoilerStand1.clone();
-        spoilerStand2.position.x = 0.6;
-        carGroup.add(spoilerStand2);
 
         scene.add(carGroup);
 
@@ -1311,6 +1332,19 @@
         btnReload.addEventListener('touchstart', triggerReload);
         btnReload.addEventListener('click', triggerReload);
         btnMission.addEventListener('click', generateMission);
+        
+        // Mouse click to fire
+        document.addEventListener('mousedown', (e) => {
+            if (!gameState.isPlaying) return;
+            if (e.target.closest('#ui-layer') || e.target.closest('#start-screen')) return;
+            gameState.inputs.fire = true;
+            btnFire.classList.add('pressed');
+        });
+        document.addEventListener('mouseup', (e) => {
+            gameState.inputs.fire = false;
+            btnFire.classList.remove('pressed');
+        });
+        
         const activeKeys = { w: false, a: false, s: false, d: false, up: false, down: false, left: false, right: false };
         document.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
@@ -1554,7 +1588,7 @@
                 playerGroup.position.copy(carGroup.position).add(offset);
                 playerGroup.position.y = 0;
                 playerGroup.visible = true;
-                btnAction.innerHTML = 'F / Enter';
+                btnAction.innerHTML = '🚗';
                 btnMission.style.display = 'block';
             } else {
                 if (playerGroup.position.distanceTo(carGroup.position) < 6) {
