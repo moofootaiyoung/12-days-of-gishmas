@@ -201,41 +201,13 @@ const LandingPage = ({ onEnter, onLogin, onSignup }: { onEnter: () => void, onLo
 };
 
 // --- Home Page Component (Day Selection) ---
-const HomePage = ({ onBack, onSusTestV2 }: { onBack: () => void; onSusTestV2: () => void }) => {
+const HomePage = ({ onBack, onSusTestV2, onGta6 }: { onBack: () => void; onSusTestV2: () => void; onGta6: () => void }) => {
   const [showWheel, setShowWheel] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [wheelRotation, setWheelRotation] = useState(0);
   const [prizeWon, setPrizeWon] = useState(false);
-  const [showCoupon, setShowCoupon] = useState(false);
 
-  const unlockedDay = 2; // UNLOCK DAY 1 AND DAY 2
-
-  useEffect(() => {
-    // Check if already shown this session (navigating back from a day)
-    const shownThisSession = sessionStorage.getItem('gishmas_coupon_shown_session');
-    if (shownThisSession) {
-      return; // Don't show again this session
-    }
-
-    // Check total visit count (max 2 times ever)
-    const visitCount = parseInt(localStorage.getItem('gishmas_coupon_visits') || '0', 10);
-    if (visitCount >= 2) {
-      return; // Already shown 2 times, don't show anymore
-    }
-
-    // Show coupon after 3 seconds
-    const timer = setTimeout(() => {
-      setShowCoupon(true);
-      // Mark as shown this session
-      sessionStorage.setItem('gishmas_coupon_shown_session', 'true');
-      // Increment visit count
-      localStorage.setItem('gishmas_coupon_visits', String(visitCount + 1));
-    }, 3000);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
+  const unlockedDay = 3; // UNLOCK DAY 1, DAY 2, AND DAY 3
 
   const spinTheWheel = () => {
     if (spinning || prizeWon) return;
@@ -252,117 +224,6 @@ const HomePage = ({ onBack, onSusTestV2 }: { onBack: () => void; onSusTestV2: ()
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-700 to-green-900 font-sans p-4 relative selection:bg-green-400 selection:text-green-900 uppercase overflow-x-hidden text-slate-900 flex flex-col items-center">
       <Snowfall />
-      
-      {/* COUPON MODAL - RIDICULOUS ANIMATION */}
-      {showCoupon && (
-        <div 
-          className="fixed inset-0 flex items-center justify-center p-4 animate-[flash-bg_0.3s_ease-in-out_3]"
-          style={{ zIndex: 99999, background: 'rgba(0,0,0,0.9)' }}
-        >
-          {/* Spinning emojis background */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {['🎄', '🎅', '🎁', '⭐', '🔔', '❄️', '🦌', '🍪', '🎄', '🎅', '🎁', '⭐', '🔔', '❄️', '🦌', '🍪', '🎉', '🥳', '✨', '💫', '🌟', '🎊', '🧦', '🕯️', '☃️', '⛄', '🤶', '🧝', '🎀', '🍬'].map((emoji, i) => (
-              <div 
-                key={i}
-                className="absolute text-4xl md:text-6xl animate-[crazy-float_2s_ease-in-out_infinite]"
-                style={{
-                  left: `${(i * 7) % 100}%`,
-                  top: `${(i * 13) % 100}%`,
-                  animationDelay: `${i * 0.1}s`,
-                  opacity: 0.9,
-                }}
-              >
-                {emoji}
-              </div>
-            ))}
-          </div>
-
-          <div className="relative bg-white p-4 rounded-xl shadow-2xl max-w-md w-full text-center animate-[coupon-entrance_0.8s_cubic-bezier(0.175,0.885,0.32,1.275)] border-8 border-transparent"
-            style={{
-              background: 'linear-gradient(white, white) padding-box, linear-gradient(45deg, #ff0000, #00ff00, #ff0000, #00ff00) border-box',
-              animation: 'coupon-entrance 0.8s cubic-bezier(0.175,0.885,0.32,1.275), rainbow-border 0.5s linear infinite, glow-pulse 1s ease-in-out infinite'
-            }}
-          >
-            <button 
-              onClick={() => setShowCoupon(false)} 
-              className="absolute -top-3 -right-3 z-10 bg-red-600 text-white p-2 rounded-full border-2 border-white shadow-xl hover:scale-110 transition-transform animate-[wiggle_0.3s_ease-in-out_infinite]"
-            >
-              <X size={20} />
-            </button>
-            <h2 className="text-2xl md:text-3xl font-black text-red-600 mb-3 animate-[crazy-text_0.1s_linear_infinite]">
-              ITS GISHMAS DAY!!<br/>
-              <span className="text-green-600">HERE'S A SPECIAL GIFT!!!</span>
-            </h2>
-            <img 
-              src="/assets/hiro-coupon-final-compressed.jpg" 
-              alt="Special Coupon" 
-              className="w-full h-auto rounded-lg animate-[shake-img_0.5s_ease-in-out_3]"
-            />
-            <button
-              onClick={() => {
-                const printWindow = window.open('/assets/hiro-coupon-final-compressed.jpg', '_blank');
-                if (printWindow) {
-                  printWindow.onload = () => {
-                    printWindow.print();
-                  };
-                }
-              }}
-              className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all hover:scale-105 active:scale-95"
-            >
-              🖨️ PRINT COUPON
-            </button>
-          </div>
-
-          <style>{`
-            @keyframes coupon-entrance {
-              0% { transform: scale(0) rotate(-180deg); opacity: 0; }
-              50% { transform: scale(1.3) rotate(10deg); }
-              75% { transform: scale(0.9) rotate(-5deg); }
-              100% { transform: scale(1) rotate(0deg); opacity: 1; }
-            }
-            @keyframes rainbow-border {
-              0% { border-color: #ff0000; }
-              25% { border-color: #00ff00; }
-              50% { border-color: #ffff00; }
-              75% { border-color: #ff00ff; }
-              100% { border-color: #ff0000; }
-            }
-            @keyframes glow-pulse {
-              0%, 100% { box-shadow: 0 0 20px #ff0000, 0 0 40px #00ff00, 0 0 60px #ff0000; }
-              50% { box-shadow: 0 0 40px #00ff00, 0 0 80px #ff0000, 0 0 120px #00ff00; }
-            }
-            @keyframes wiggle {
-              0%, 100% { transform: rotate(-10deg); }
-              50% { transform: rotate(10deg); }
-            }
-            @keyframes crazy-text {
-              0% { transform: translate(2px, 2px); }
-              25% { transform: translate(-2px, -1px); }
-              50% { transform: translate(1px, -2px); }
-              75% { transform: translate(-1px, 2px); }
-              100% { transform: translate(2px, -1px); }
-            }
-            @keyframes shake-img {
-              0%, 100% { transform: translateX(0) rotate(0deg); }
-              20% { transform: translateX(-10px) rotate(-5deg); }
-              40% { transform: translateX(10px) rotate(5deg); }
-              60% { transform: translateX(-10px) rotate(-5deg); }
-              80% { transform: translateX(10px) rotate(5deg); }
-            }
-            @keyframes flash-bg {
-              0%, 100% { background: rgba(255,0,0,0.9); }
-              33% { background: rgba(0,255,0,0.9); }
-              66% { background: rgba(255,255,0,0.9); }
-            }
-            @keyframes crazy-float {
-              0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-              25% { transform: translateY(-30px) rotate(90deg) scale(1.2); }
-              50% { transform: translateY(0) rotate(180deg) scale(0.8); }
-              75% { transform: translateY(30px) rotate(270deg) scale(1.1); }
-            }
-          `}</style>
-        </div>
-      )}
       
       {/* WHEEL MODAL */}
       {showWheel && (
@@ -461,6 +322,21 @@ const HomePage = ({ onBack, onSusTestV2 }: { onBack: () => void; onSusTestV2: ()
                );
              }
              
+             // Day 3 is clickable when unlocked - GTA 6
+             if (day === 3 && isUnlocked) {
+               return (
+                 <button
+                   key={day}
+                   onClick={onGta6}
+                   className="p-8 rounded-[2rem] border-[6px] flex flex-col items-center justify-center relative overflow-hidden group transition-all bg-white border-green-500 shadow-[0_8px_0_#15803d] hover:scale-105 active:scale-95 active:shadow-none active:translate-y-2"
+                 >
+                   <div className="text-4xl mb-4 group-hover:animate-bounce">🎁</div>
+                   <h2 className="text-2xl font-black mb-2 text-green-600">DAY {day}</h2>
+                   <p className="font-bold text-slate-600">GTA 6</p>
+                 </button>
+               );
+             }
+             
              return (
               <div 
                 key={day} 
@@ -479,16 +355,6 @@ const HomePage = ({ onBack, onSusTestV2 }: { onBack: () => void; onSusTestV2: ()
               </div>
             );
           })}
-        </div>
-
-        {/* Hiro's Coupon Link */}
-        <div className="mt-16 text-center">
-          <button 
-            onClick={() => setShowCoupon(true)}
-            className="text-white/50 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors underline"
-          >
-            🎁 Hiro's Coupon
-          </button>
         </div>
 
         {/* Goofy Copyright Footer */}
@@ -513,7 +379,7 @@ const HomePage = ({ onBack, onSusTestV2 }: { onBack: () => void; onSusTestV2: ()
 };
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'landing' | 'home' | 'sus-test' | 'sus-test-v2'>('landing');
+  const [currentPage, setCurrentPage] = useState<'landing' | 'home' | 'sus-test' | 'sus-test-v2' | 'gta6'>('landing');
   const [user, setUser] = useState<User | null>(null);
   
   // Global Audio State (persists across pages)
@@ -552,6 +418,17 @@ export default function App() {
     }
     setIsPlaying(!isPlaying);
   };
+
+  // Listen for goBack message from GTA6 iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data === 'goBack') {
+        setCurrentPage('home');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
   
   // 1. Authentication
   useEffect(() => {
@@ -599,7 +476,16 @@ export default function App() {
   return (
     <>
       {currentPage === 'home' && (
-        <HomePage onBack={() => setCurrentPage('landing')} onSusTestV2={() => setCurrentPage('sus-test-v2')} />
+        <HomePage onBack={() => setCurrentPage('landing')} onSusTestV2={() => setCurrentPage('sus-test-v2')} onGta6={() => setCurrentPage('gta6')} />
+      )}
+      {currentPage === 'gta6' && (
+        <div className="fixed inset-0 z-50">
+          <iframe 
+            src="/gta6.html" 
+            className="w-full h-full border-0"
+            title="GTA VI"
+          />
+        </div>
       )}
       {currentPage === 'sus-test-v2' && (
         <SusTestV2 user={user} db={db} appId={appId} onBack={() => setCurrentPage('home')} />
