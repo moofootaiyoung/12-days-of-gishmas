@@ -387,7 +387,7 @@ export default function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioInitialized = useRef(false);
 
-  // Initialize audio once when leaving landing page
+  // Initialize audio once when leaving landing page (no autoplay)
   useEffect(() => {
     if (currentPage !== 'landing' && !audioInitialized.current) {
       audioInitialized.current = true;
@@ -395,17 +395,8 @@ export default function App() {
       themeAudio.loop = false;
       themeAudio.volume = 0.5;
       audioRef.current = themeAudio;
-
-      const playAudio = async () => {
-        try {
-          await themeAudio.play();
-          setIsPlaying(true);
-        } catch (e) {
-          console.log('Autoplay blocked');
-          setIsPlaying(false);
-        }
-      };
-      playAudio();
+      // Don't autoplay - user must click play button
+      setIsPlaying(false);
     }
   }, [currentPage]);
 
