@@ -481,8 +481,18 @@ const HomePage = ({ onBack, onSusTestV2 }: { onBack: () => void; onSusTestV2: ()
           })}
         </div>
 
+        {/* Hiro's Coupon Link */}
+        <div className="mt-16 text-center">
+          <button 
+            onClick={() => setShowCoupon(true)}
+            className="text-white/50 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors underline"
+          >
+            🎁 Hiro's Coupon
+          </button>
+        </div>
+
         {/* Goofy Copyright Footer */}
-        <div className="mt-16 mb-24 text-center text-white/30 text-[10px] font-mono px-4">
+        <div className="mt-4 mb-24 text-center text-white/30 text-[10px] font-mono px-4">
           <p>© 1847-2099 GISHMAS INTERNATIONAL HOLDINGS LLC™ | All Rights Reserved (lol not really)</p>
           <p className="mt-1 flex flex-wrap justify-center gap-2">
             <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white/60 underline">Privacy Policy</a>
